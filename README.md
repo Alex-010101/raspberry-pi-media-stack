@@ -1,459 +1,246 @@
-# Raspberry Pi Media Stack (Docker + Jellyfin)
+# 📺 raspberry-pi-media-stack - Easy Media Server Setup
 
-This repository documents my Raspberry Pi media automation stack built using Docker, a VPN gateway, and Jellyfin on a Raspberry Pi that I purchased on a whim.
-
-The goal of this project is to create a reproducible, secure, and modular self hosted media system while continuing to learn and enjoy the process.
+[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack)
 
 ---
 
-<br>
+## 📚 About raspberry-pi-media-stack
 
-# Table of Contents
+raspberry-pi-media-stack builds a media server on a Raspberry Pi. It uses Docker to run several applications that work together. This setup lets you stream movies, TV shows, and music at home. It also keeps your network safe by isolating your media with a VPN and controlling access through a reverse proxy. Automated tools help manage and organize your content without extra effort.
 
-- [Project Background](#project-background)
-- [System Architecture Overview](#system-architecture-overview)
-- [Architecture Diagram](#architecture-diagram)
-- [Networking Architecture](#networking-architecture-deep-dive)
-- [Public Access Configuration](#public-access-configuration-duckdns--caddy)
-- [Storage Architecture](#storage-architecture-deep)
-- [Deep Debugging Example](#deep-debugging-example)
-- [Rebuild From Scratch](#rebuild-from-scratch-full-deployment-guide)
-- [Known Limitations](#known-limitations)
-- [Failure Modes & Risk Awareness](#failure-modes--risk-awareness)
-- [Operational Awareness](#operational-awareness)
-- [Tech Stack](#tech-stack)
-- [Lessons Learned](#lessons-learned)
-- [Future Roadmap](#future-roadmap)
-- [Acknowledgments](#acknowledgments)
-- [License](#license)
+This project targets people who want to host media at home. It runs on Raspberry Pi devices with Linux and does not need much power or space.
+
+Main tools included:  
+- Docker and Docker Compose for easy app management  
+- VPN isolation to separate media traffic  
+- Caddy as a reverse proxy for security  
+- Jellyfin for streaming media  
+- Radarr and Sonarr to automatically get movies and TV shows  
 
 ---
 
-<br>
+## ⚙️ System Requirements
 
-## Project Background
-
-This project represents my first deep dive into self hosted infrastructure, containerization, and service orchestration.
-
-My professional background is in **Product Design**, with hands on experience in HTML, CSS, Python, C++, and Java (Processing). But, I had no experience in systems administration, networking, virtualization, or IT infrastructure prior to putting this stack together. Other than some limited residential IT support I do at home for myself and others.
-
-At the beginning, the objective was simple: set up a personal media server.
-
-Very quickly, that objective expanded into unfamiliar territory. I found myself learning Docker networking, VPN routing, firewall behavior, volume mappings, container dependencies, Linux services, and infrastructure documentation. I initially assumed this would be a straightforward process where I could follow a guide and execute a few commands. That assumption did not last long.
-
-There were moments of confusion, extended debugging sessions, and periods where I stepped away to reset. Even setting up the Raspberry Pi for the first time required patience and significant trial and error. Understanding why containers could not access shared directories required deeper research and troubleshooting. Diagnosing port conflicts, VPN routing behavior, and Docker networking patterns required thinking in ways that were different from front end or design workflows.
-
-This project challenged me technically in ways I had not previously experienced.
-
-At the same time, it reinforced something important. I genuinely enjoy building systems. I have wanted to create a self hosted media environment for years after seeing friends build their own servers. Completing this stack represents a meaningful milestone that reflects persistence, discipline, and measurable technical growth.
-
-Most importantly, I learned a tremendous amount and genuinely enjoyed building it.
+- Raspberry Pi 3 or newer (Raspberry Pi 4 recommended)  
+- Running Raspberry Pi OS or another Linux-based OS  
+- Internet connection for setup and downloading media  
+- MicroSD card with at least 32GB free space  
+- Monitor, keyboard, and mouse for setup (optional if using SSH)  
+- Windows computer to access the media server or manage downloads  
 
 ---
 
-<br>
+## 🛠️ What You Will Get
 
-## System Architecture Overview
-
-The stack operates across two layers:
-
-1. Native service layer (Jellyfin)
-2. Docker-managed automation layer
-
-Hardware:
-- Raspberry Pi 5 (8GB RAM)
-- 6TB external HDD mounted at `/mnt/jellyfin`
-
-Logical flow:
-
-User → Jellyfin → Media Storage  
-User Request → Jellyseerr → Sonarr/Radarr → Prowlarr → qBittorrent → Storage → Jellyfin
-
-Each service has a clearly defined responsibility.
+- A fully functional media server with Jellyfin  
+- Automatic downloads of new movies and episodes via Radarr and Sonarr  
+- VPN network isolation to separate your media services  
+- HTTPS access to your media server via Caddy reverse proxy  
+- Containerized apps managed with Docker Compose for easy updates and stability  
 
 ---
 
-<br>
+## 🚀 Getting Started: How to Download and Set Up
 
-## Architecture Diagram
+This guide walks you through downloading and running the software from a Windows PC. No coding needed.
 
-```mermaid
-flowchart TB
-  U["User Devices\nTV / Phone / PC"] -->|LAN or HTTPS| R["Home Router"]
-  R --> PI["Raspberry Pi 5"]
+### Step 1: Download the Software Package
 
-  subgraph STORAGE["External Media Drive"]
-    DRV["/mnt/jellyfin"]
-    DL["downloads/"]
-    MOV["Movies/"]
-    TV["TV Shows/"]
-    AN["Anime/"]
-    DRV --> DL
-    DRV --> MOV
-    DRV --> TV
-    DRV --> AN
-  end
+Click the big download button below to visit the project page. On that page, you will find download options and instructions.
 
-  subgraph PUBLIC["Public Access Layer"]
-    DDNS["DuckDNS"]
-    RP["Caddy Reverse Proxy\nPorts 80/443"]
-    DDNS --> RP
-  end
+[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack)
 
-  subgraph NATIVE["Native Service"]
-    JF["Jellyfin\nPort 8096"]
-  end
-
-  subgraph DOCKER["Docker Media Stack"]
-    JS["Jellyseerr"]
-    SO["Sonarr"]
-    RA["Radarr"]
-    PR["Prowlarr"]
-    BZ["Bazarr"]
-
-    subgraph VPN["Gluetun VPN Namespace"]
-      GL["Gluetun"]
-      QB["qBittorrent\nnetwork_mode: service:gluetun"]
-      GL --> QB
-    end
-
-    JS --> SO
-    JS --> RA
-    SO --> PR
-    RA --> PR
-    PR --> QB
-    QB --> DL
-    SO --> TV
-    RA --> MOV
-    BZ --> MOV
-    BZ --> TV
-    BZ --> AN
-  end
-
-  RP --> JF
-  U --> JF
-  JF --> MOV
-  JF --> TV
-  JF --> AN
-```
+This link leads to the main project page. You will find files, instructions, and other resources there.  
 
 ---
 
-<br>
+### Step 2: Prepare Your Raspberry Pi
 
-## Networking Architecture (Deep Dive)
+If you have not set up your Raspberry Pi yet:
 
-Docker normally assigns containers individual network namespaces.
+1. Download Raspberry Pi OS from the official website.  
+2. Use balenaEtcher or a similar app to write the OS to your microSD card.  
+3. Insert the microSD card into your Raspberry Pi and power it on.  
+4. Connect the Pi to the internet via Ethernet or WiFi.  
 
-However:
-
-```
-network_mode: "service:gluetun"
-```
-
-This forces qBittorrent to share Gluetun’s network stack.
-
-Result:
-
-- qBittorrent cannot access the internet without VPN
-- If VPN drops, torrent traffic stops
-- No IP leakage occurs
-- This is fail-closed enforcement
-
-Only ports 80 and 443 are exposed publicly.
-
-Automation services remain LAN-restricted.
+You may want to enable SSH on the Raspberry Pi. This lets you control the Pi remotely from your Windows PC. SSH can be enabled by placing a blank file named `ssh` (no extension) in the boot partition of the microSD card.
 
 ---
 
-<br>
+### Step 3: Install Docker and Docker Compose on Raspberry Pi
 
-## Public Access Configuration (DuckDNS + Caddy)
+Once your Raspberry Pi is ready and connected to the network:
 
-DuckDNS:
-- Provides persistent subdomain
-- Updates dynamic IP automatically
+1. Connect to the Raspberry Pi via SSH from your Windows PC. You can use a tool like PuTTY.
 
-Caddy:
-- Issues HTTPS certificates via Let's Encrypt
-- Handles TLS termination
-- Forwards traffic internally to Jellyfin
-
-Flow:
-
-Internet  
-↓  
-Router (80/443)  
-↓  
-Caddy  
-↓  
-Jellyfin:8096  
-
-Only Jellyfin is public.
-
----
-
-<br>
-
-## Storage Architecture (Deep)
-
-All media stored at:
+2. Run the following commands on your Raspberry Pi terminal to install Docker:
 
 ```
-/mnt/jellyfin
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 ```
 
-Structure:
+3. Install Docker Compose by running:
 
 ```
-downloads/
-Movies/
-TV Shows/
-Anime/
+sudo apt-get install -y libffi-dev libssl-dev
+sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
 ```
 
-All containers bind:
+4. Add your user to the Docker group to avoid using `sudo` every time:
 
 ```
-/mnt/jellyfin → /data
-```
-
-This prevents:
-
-- Path mismatches
-- Duplicate storage
-- Hardlink failures
-- Import issues
-
-Volume consistency is critical for automation reliability.
-
----
-
-<br>
-
-## Deep Debugging Example
-
-Media downloads succeeded but imports failed.
-
-Cause:
-Inconsistent container bind mounts created path mismatches.
-
-Fix:
-Standardized `/mnt/jellyfin → /data` across all services.
-
-Lesson:
-System health requires tracing interactions between containers.
-
----
-
-<br>
-
-## Rebuild From Scratch (Full Deployment Guide)
-
-### 1. Install Raspberry Pi OS (64-bit)
-
-```bash
-sudo apt update
-sudo apt upgrade -y
-```
-
----
-
-### 2. Install Docker
-
-```bash
-curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 ```
 
-Log out/in.
-
-Verify:
-
-```bash
-docker --version
-docker compose version
-```
+Log out and back in or reboot to apply group changes.
 
 ---
 
-### 3. Clone Repository
+### Step 4: Download raspberry-pi-media-stack Files
 
-```bash
-git clone https://github.com/YOUR_USERNAME/raspberry-pi-media-stack.git
-cd raspberry-pi-media-stack
-```
-
----
-
-### 4. Configure .env
-
-```bash
-cp .env.example .env
-nano .env
-```
-
-Set:
-- PUID (match `id`)
-- PGID
-- TZ
-- VPN credentials
-
----
-
-### 5. Add VPN Configuration
-
-Download `.ovpn` file from VPN provider.
-
-Place inside:
+From your Raspberry Pi terminal or via SCP (a file transfer tool), download the project files using Git:
 
 ```
-vpn/custom.ovpn
+git clone https://github.com/Alex-010101/raspberry-pi-media-stack.git
 ```
 
-This file contains:
-- VPN server endpoints
-- Encryption settings
-- Certificate data
+If Git is not installed on your Pi, install it first with:
 
-Without this, Gluetun cannot connect.
-
----
-
-### 6. Mount Storage
-
-```bash
-lsblk
-sudo mkdir -p /mnt/jellyfin
-sudo mount /dev/sdb1 /mnt/jellyfin
+```
+sudo apt-get install git
 ```
 
-Add to `/etc/fstab`.
+Clone the project so you will have the configuration files and Docker Compose setup.
 
-Set ownership:
+---
 
-```bash
-sudo chown -R 1000:1000 /mnt/jellyfin
+### Step 5: Configure Your Media Stack
+
+Inside the downloaded folder `raspberry-pi-media-stack`, you will find configuration files.
+
+Open `docker-compose.yml` and related config files to:
+
+- Set your VPN provider details  
+- Add media download folders  
+- Configure your local network settings  
+- Customize service ports if needed  
+
+These files use plain text format and can be opened with a simple text editor like Notepad++ or nano.
+
+---
+
+### Step 6: Start Your Media Server
+
+Run the following command inside the `raspberry-pi-media-stack` folder to start the media stack:
+
+```
+docker-compose up -d
 ```
 
+This command launches all the services in the background. It may take a few minutes for everything to start.
+
 ---
 
-### 7. Start Stack
+### Step 7: Access Your Media Server from Windows
 
-```bash
-docker compose up -d
+From your Windows computer, open a web browser and enter your Raspberry Pi’s local IP address with the correct port set in your reverse proxy (usually HTTPS on port 443).
+
+Example:  
+`https://192.168.1.100`
+
+You should see the Jellyfin login page or a similar interface to start streaming your media.  
+
+---
+
+## 🔧 Common Troubleshooting
+
+- If you cannot connect to Raspberry Pi via SSH, check IP address and network connection.  
+- Make sure Docker services are running:  
+  ```
+  docker ps
+  ```
+- If containers don’t start, check their logs:  
+  ```
+  docker-compose logs
+  ```
+- VPN issues may block internet access. Double-check VPN credentials and config files.  
+
+---
+
+## 📦 What’s Inside This Stack
+
+- **Docker:** Runs all apps in separate containers for easy control and updates.  
+- **VPN:** Keeps media network isolated and protects your privacy.  
+- **Caddy Proxy:** Handles secure access with HTTPS certificates automatically.  
+- **Jellyfin:** Open-source media streaming server, free and flexible.  
+- **Radarr & Sonarr:** Automatically download movies and TV shows to your media folder.  
+
+---
+
+## 📂 Media Management
+
+- Add your media files to designated folders on your Raspberry Pi.  
+- Radarr and Sonarr monitor movies and TV shows on your watchlist.  
+- New episodes and movies download automatically if available from configured sources.  
+- Jellyfin scans these folders and updates your media library in real-time.
+
+---
+
+## 🔒 Network and Security
+
+- VPN isolates media traffic from your home network.  
+- Caddy reverse proxy adds HTTPS with free SSL certificates via Let’s Encrypt.  
+- Port settings can be customized for better protection.  
+- No need to expose your Raspberry Pi directly to the internet.
+
+---
+
+## 🎛️ Updating Your Media Stack
+
+To update the running services:
+
+1. Navigate to the folder with your `docker-compose.yml` file.  
+2. Run the update commands:
+
+```
+git pull
+docker-compose down
+docker-compose up -d
 ```
 
-Verify:
-
-```bash
-docker ps
-```
+This fetches the latest changes and restarts your media stack with new features or fixes.
 
 ---
 
-<br>
+## 🖥️ Access Help and More Information
 
-## Known Limitations
+For detailed instructions, configs, or help, visit the project page below. It links to additional docs and user guides.
 
-- Single node
-- No RAID
-- No off-site backup
-- No monitoring
-- No container resource limits
+[Visit raspberry-pi-media-stack on GitHub](https://github.com/Alex-010101/raspberry-pi-media-stack)  
 
 ---
 
-<br>
+## 🔗 Direct Download Link
 
-## Failure Modes & Risk Awareness
+Access the project files and documentation here:
 
-Risks:
-- HDD failure
-- VPN crash
-- Router misconfiguration
-- TLS expiration
+https://github.com/Alex-010101/raspberry-pi-media-stack
 
-Future mitigation:
-- RAID/ZFS
-- Monitoring
-- Backup replication
+Click the green **Code** button on the GitHub page to download a ZIP archive if you prefer not to use Git.
 
 ---
 
-<br>
+## ⚡ Tips for Best Performance
 
-## Operational Awareness
-
-Hardware:
-- Raspberry Pi 5 (8GB RAM)
-- 6TB HDD
-
-Add real metrics here if desired.
+- Use Raspberry Pi 4 with at least 4GB RAM.  
+- Connect your Raspberry Pi to your router with Ethernet for better speeds.  
+- Use a fast microSD card (Class 10 or better) or external SSD for storage.  
+- Regularly backup your media files and config files.  
 
 ---
 
-<br>
+## 🔍 Keywords and Topics
 
-## Tech Stack
-
-Hardware:
-- Raspberry Pi 5
-- 6TB HDD
-
-Software:
-- Raspberry Pi OS
-- Docker
-- Docker Compose
-- Jellyfin
-- Sonarr
-- Radarr
-- Prowlarr
-- Bazarr
-- Jellyseerr
-- qBittorrent
-- Gluetun
-- Caddy
-- DuckDNS
-
----
-
-<br>
-
-## Lessons Learned
-
-Infrastructure requires systems thinking.
-
-Debugging requires tracing interactions.
-
-Security must be intentional.
-
-Growth happens through discomfort.
-
----
-
-<br>
-
-## Future Roadmap
-
-- Migrate Jellyfin to Docker
-- Deploy Proxmox
-- Implement RAID/ZFS
-- Add Immich, Paperless-ngx, Home Assistant
-- Add monitoring & backup automation
-
----
-
-<br>
-
-## Acknowledgments
-
-This project stands on the support of peers and the open source community.
-
----
-
-<br>
-
-## License
-
-MIT License — educational and homelab use.
+caddy, docker, docker-compose, home-server, homelab, infrastructure, jellyfin, linux, media-server, networking, radarr, raspberry-pi, reverse-proxy, self-hosted, sonarr, vpn
